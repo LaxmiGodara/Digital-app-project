@@ -3,45 +3,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory Dashboard</title>
+  <title>Inventory &amp; Finance Management</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100">
-
-  <!-- Header -->
-  <header class="bg-blue-900 text-white p-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">Inventory Dashboard</h1>
-    <button class="bg-white text-blue-900 px-4 py-2 rounded">Logout</button>
-  </header>
-
-  <!-- Main Layout -->
-  <div class="flex flex-col md:flex-row min-h-screen">
-
+<body class="antialiased text-gray-800">
+  <div class="min-h-screen flex bg-gray-100">
     <!-- Sidebar -->
-    <aside class="bg-white shadow-md md:w-64 w-full p-4 space-y-2">
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Dashboard</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Products</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Customers</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Suppliers</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Purchase Order</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">GRN</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Sales Order</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Invoice</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Transactions</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Reports</a>
-      <a href="#" class="block px-4 py-2 rounded hover:bg-blue-100">Settings</a>
+    <aside id="sidebar" class="bg-blue-900 text-white w-64 px-4 py-8 fixed inset-y-0 left-0 transform -translate-x-full sm:relative sm:translate-x-0 sm:inset-0 space-y-6 z-50 transition duration-300">
+      <h1 class="text-2xl font-bold">Inventory Admin</h1>
+      <nav class="space-y-2">
+        <a id="dashboardLink" href="#" class="block px-4 py-2 rounded text-white bg-blue-800 hover:bg-blue-800">Dashboard</a>
+        <a id="purchaseLink" href="#" class="block px-4 py-2 rounded text-white hover:bg-blue-800">Purchase/GRN</a>
+      </nav>
     </aside>
-
-    <!-- Content -->
-    <main class="flex-1 p-6">
-      <h2 class="text-2xl font-bold mb-4">Welcome to Inventory App</h2>
-      <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="bg-white p-4 shadow rounded">Total Stock: 3500 kg</div>
-        <div class="bg-white p-4 shadow rounded">Today’s Sales: ₹12,000</div>
-        <div class="bg-white p-4 shadow rounded">Pending Invoices: 5</div>
-      </div>
-    </main>
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black opacity-50 hidden sm:hidden z-40"></div>
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col">
+      <!-- Mobile header -->
+      <header class="sm:hidden flex items-center justify-between bg-blue-900 text-white px-4 py-3">
+        <span class="font-bold">Inventory &amp; Finance Management</span>
+        <button id="menuBtn" class="text-white focus:outline-none">
+          <!-- Hamburger icon -->
+          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </header>
+      <!-- Content sections -->
+      <main class="flex-1 p-4 sm:pt-8 bg-gray-100">
+        <!-- Dashboard Section -->
+        <section id="dashboardSection">
+          <h2 class="text-2xl font-semibold mb-4">Dashboard</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded shadow p-4">
+              <div class="text-sm font-medium text-gray-500">Total Vendors</div>
+              <div class="text-2xl font-bold text-gray-800 mt-1">5</div>
+            </div>
+            <div class="bg-white rounded shadow p-4">
+              <div class="text-sm font-medium text-gray-500">Total Products</div>
+              <div class="text-2xl font-bold text-gray-800 mt-1">12</div>
+            </div>
+            <div class="bg-white rounded shadow p-4">
+              <div class="text-sm font-medium text-gray-500">Monthly Sales (₹)</div>
+              <div class="text-2xl font-bold text-gray-800 mt-1">₹4,50,000</div>
+            </div>
+            <div class="bg-white rounded shadow p-4">
+              <div class="text-sm font-medium text-gray-500">Pending GRNs</div>
+              <div class="text-2xl font-bold text-gray-800 mt-1">2</div>
+            </div>
+          </div>
+        </section>
+        <!-- Purchase/GRN Section -->
+        <section id="purchaseSection" class="hidden">
+          <h2 class="text-2xl font-semibold mb-4">New Purchase &amp; GRN Entry</h2>
+          <div class="bg-white rounded shadow p-6">
+            <form>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="vendorName" class="block text-sm font-medium text-gray-700">Vendor Name</label>
+                  <input type="text" id="vendorName" name="vendorName" class="mt-1 block w-full border border-gray-300 rounded p-2" placeholder="e.g. Acme Fertilizers" />
+                </div>
+                <div>
+                  <label for="product" class="block text-sm font-medium text-gray-700">Product</label>
+                  <input type="text" id="product" name="product" class="mt-1 block w-full border border-gray-300 rounded p-2" placeholder="e.g. Urea 50kg bag" />
+                </div>
+                <div>
+                  <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+                  <input type="number" id="quantity" name="quantity" class="mt-1 block w-full border border-gray-300 rounded p-2" placeholder="e.g. 100" />
+                </div>
+                <div>
+                  <label for="rate" class="block text-sm font-medium text-gray-700">Rate per Unit (₹)</label>
+                  <input type="number" id="rate" name="rate" class="mt-1 block w-full border border-gray-300 rounded p-2" placeholder="e.g. 500" />
+                </div>
+                <div class="md:col-span-2">
+                  <label for="grnDate" class="block text-sm font-medium text-gray-700">GRN Date</label>
+                  <input type="date" id="grnDate" name="grnDate" class="mt-1 block w-full border border-gray-300 rounded p-2" />
+                </div>
+              </div>
+              <button type="submit" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit</button>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
   </div>
-
+  <script>
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    if (menuBtn) {
+      menuBtn.addEventListener('click', () => {
+        if (sidebar.classList.contains('-translate-x-full')) {
+          // Open sidebar
+          sidebar.classList.remove('-translate-x-full');
+          overlay.classList.remove('hidden');
+        } else {
+          // Close sidebar
+          sidebar.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+        }
+      });
+    }
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        // Close sidebar when clicking outside on overlay
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+      });
+    }
+    // Section switching
+    const dashboardLink = document.getElementById('dashboardLink');
+    const purchaseLink = document.getElementById('purchaseLink');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const purchaseSection = document.getElementById('purchaseSection');
+    if (dashboardLink && purchaseLink) {
+      dashboardLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Switch to dashboard section
+        dashboardSection.classList.remove('hidden');
+        purchaseSection.classList.add('hidden');
+        dashboardLink.classList.add('bg-blue-800');
+        purchaseLink.classList.remove('bg-blue-800');
+      });
+      purchaseLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Switch to purchase/GRN section
+        purchaseSection.classList.remove('hidden');
+        dashboardSection.classList.add('hidden');
+        purchaseLink.classList.add('bg-blue-800');
+        dashboardLink.classList.remove('bg-blue-800');
+      });
+    }
+  </script>
 </body>
 </html>
