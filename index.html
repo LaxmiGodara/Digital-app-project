@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Inventory & Finance Management</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <style>
@@ -16,7 +16,7 @@
       margin-left: 2px;
     }
     table th:first-child, table td:first-child {
-      width: 8%;
+      width: 6%;
       text-align: center;
     }
     table th:nth-child(2), table td:nth-child(2) {
@@ -25,6 +25,11 @@
     table th:last-child, table td:last-child {
       width: 15%;
       white-space: nowrap;
+    }
+    .error-msg {
+      color: red;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
     }
   </style>
 </head>
@@ -37,14 +42,16 @@
         <button id="purchase-btn" class="sidebar-btn block w-full text-left px-3 py-2 rounded hover:bg-blue-700">Purchase / GRN</button>
         <button id="invoice-btn" class="sidebar-btn block w-full text-left px-3 py-2 rounded hover:bg-blue-700">Invoice Entry</button>
         <button id="customers-btn" class="sidebar-btn block w-full text-left px-3 py-2 rounded hover:bg-blue-700">Customer Management</button>
+        <button id="products-btn" class="sidebar-btn block w-full text-left px-3 py-2 rounded hover:bg-blue-700">Product Master</button>
+        <button id="suppliers-btn" class="sidebar-btn block w-full text-left px-3 py-2 rounded hover:bg-blue-700">Supplier Master</button>
       </nav>
     </aside>
 
-    <main class="flex-1 p-6 bg-gray-50">
+    <main class="flex-1 p-6 bg-gray-50 overflow-auto">
       <!-- Dashboard -->
       <section id="dashboard" class="section">
         <h2 class="text-2xl font-semibold text-blue-800 mb-4">Dashboard</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div class="bg-white p-4 rounded shadow">
             <p class="text-sm text-gray-600">Customers</p>
             <h3 id="cnt-customers" class="text-xl font-bold">0</h3>
@@ -57,6 +64,10 @@
             <p class="text-sm text-gray-600">Invoices</p>
             <h3 id="cnt-invoice" class="text-xl font-bold">0</h3>
           </div>
+          <div class="bg-white p-4 rounded shadow">
+            <p class="text-sm text-gray-600">Products</p>
+            <h3 id="cnt-products" class="text-xl font-bold">0</h3>
+          </div>
         </div>
       </section>
 
@@ -65,10 +76,11 @@
         <h2 class="text-2xl font-semibold text-blue-800 mb-4">Purchase / GRN Entry</h2>
         <form id="form-purchase" class="space-y-4 max-w-3xl">
           <label for="purchase-vendor" class="required block">Vendor Name</label>
-          <input type="text" id="purchase-vendor" placeholder="Vendor Name" class="w-full p-2 border rounded" required />
+          <input type="text" id="purchase-vendor" placeholder="Vendor Name" class="w-full p-2 border rounded" required autocomplete="off" />
           
           <label for="purchase-product" class="required block">Product</label>
-          <input type="text" id="purchase-product" placeholder="Product (e.g., Urea 50kg)" class="w-full p-2 border rounded" required />
+          <input list="product-list-purchase" type="text" id="purchase-product" placeholder="Product (e.g., Urea 50kg)" class="w-full p-2 border rounded" required autocomplete="off" />
+          <datalist id="product-list-purchase"></datalist>
           
           <label for="purchase-qty" class="required block">Quantity</label>
           <input type="number" id="purchase-qty" placeholder="Quantity" class="w-full p-2 border rounded" required min="1" />
@@ -113,7 +125,8 @@
           <input type="date" id="invoice-date" class="w-full p-2 border rounded" required />
           
           <label for="invoice-product" class="required block">Product</label>
-          <input type="text" id="invoice-product" placeholder="Product (e.g., Urea 50kg)" class="w-full p-2 border rounded" required />
+          <input list="product-list-invoice" type="text" id="invoice-product" placeholder="Product (e.g., Urea 50kg)" class="w-full p-2 border rounded" required autocomplete="off" />
+          <datalist id="product-list-invoice"></datalist>
           
           <label for="invoice-qty" class="required block">Quantity</label>
           <input type="number" id="invoice-qty" placeholder="Quantity" class="w-full p-2 border rounded" required min="1" />
@@ -149,26 +162,33 @@
       <!-- Customer Management -->
       <section id="customers" class="section hidden">
         <h2 class="text-2xl font-semibold text-blue-800 mb-4">Customer Management</h2>
-        <form id="form-customers" class="space-y-4 max-w-3xl">
+        <form id="form-customers" class="space-y-4 max-w-3xl" novalidate>
           <input type="hidden" id="cust-id" />
           <label for="cust-name" class="required block">Customer Name</label>
-          <input type="text" id="cust-name" placeholder="Customer Name" required class="w-full p-2 border rounded" />
-          
+          <input type="text" id="cust-name" placeholder="Customer Name" required class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-name" class="error-msg"></div>
+
           <label for="cust-mobile" class="required block">Mobile Number</label>
-          <input type="text" id="cust-mobile" placeholder="Mobile Number" required class="w-full p-2 border rounded" />
-          
+          <input type="tel" id="cust-mobile" placeholder="Mobile Number" required class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-mobile" class="error-msg"></div>
+
+          <label for="cust-email" class="block">Email (optional)</label>
+          <input type="email" id="cust-email" placeholder="Email" class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-email" class="error-msg"></div>
+
           <label for="cust-address" class="required block">Address (Village/Town/City)</label>
-          <input type="text" id="cust-address" placeholder="Address" required class="w-full p-2 border rounded" />
-          
+          <input type="text" id="cust-address" placeholder="Address" required class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-address" class="error-msg"></div>
+
           <label for="cust-gst" class="block">GST Number (optional)</label>
-          <input type="text" id="cust-gst" placeholder="GST Number" class="w-full p-2 border rounded" />
-          
+          <input type="text" id="cust-gst" placeholder="GST Number" class="w-full p-2 border rounded" autocomplete="off" />
+
           <label for="cust-credit" class="block">Credit Limit (optional)</label>
           <input type="number" id="cust-credit" placeholder="Credit Limit" class="w-full p-2 border rounded" />
-          
+
           <label for="cust-desc" class="block">Description (optional)</label>
           <input type="text" id="cust-desc" placeholder="Description" class="w-full p-2 border rounded" />
-          
+
           <div class="flex space-x-2">
             <button type="submit" id="btn-save" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Customer</button>
             <button type="button" id="btn-cancel" class="bg-gray-400 text-white px-4 py-2 rounded hidden">Cancel</button>
@@ -180,6 +200,7 @@
             <th class="p-2 border">#</th>
             <th class="p-2 border">Name</th>
             <th class="p-2 border">Mobile</th>
+            <th class="p-2 border">Email</th>
             <th class="p-2 border">Address</th>
             <th class="p-2 border">GST No</th>
             <th class="p-2 border">Actions</th>
@@ -187,19 +208,119 @@
           <tbody id="tbl-customers"></tbody>
         </table>
       </section>
+
+      <!-- Product Master -->
+      <section id="products" class="section hidden">
+        <h2 class="text-2xl font-semibold text-blue-800 mb-4">Product Master</h2>
+        <form id="form-products" class="space-y-4 max-w-3xl" novalidate>
+          <input type="hidden" id="prod-id" />
+          <label for="prod-name" class="required block">Product Name</label>
+          <input type="text" id="prod-name" placeholder="Product Name" required class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-prod-name" class="error-msg"></div>
+
+          <label for="prod-unit" class="required block">Unit</label>
+          <select id="prod-unit" required class="w-full p-2 border rounded">
+            <option value="">Select Unit</option>
+            <option>Kg</option>
+            <option>Gram</option>
+            <option>Ton</option>
+            <option>Bag</option>
+            <option>Piece</option>
+          </select>
+          <div id="error-prod-unit" class="error-msg"></div>
+
+          <label for="prod-mrp" class="required block">MRP</label>
+          <input type="number" id="prod-mrp" placeholder="MRP" required class="w-full p-2 border rounded" min="0" step="0.01" />
+          <div id="error-prod-mrp" class="error-msg"></div>
+
+          <label for="prod-gst" class="required block">GST %</label>
+          <input type="number" id="prod-gst" placeholder="GST %" required class="w-full p-2 border rounded" min="0" max="100" />
+          <div id="error-prod-gst" class="error-msg"></div>
+
+          <label for="prod-desc" class="block">Description (optional)</label>
+          <input type="text" id="prod-desc" placeholder="Description" class="w-full p-2 border rounded" autocomplete="off" />
+
+          <div class="flex space-x-2">
+            <button type="submit" id="btn-prod-save" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Product</button>
+            <button type="button" id="btn-prod-cancel" class="bg-gray-400 text-white px-4 py-2 rounded hidden">Cancel</button>
+          </div>
+        </form>
+
+        <table class="min-w-full bg-white mt-6 border text-sm">
+          <thead class="bg-gray-200"><tr>
+            <th class="p-2 border">#</th>
+            <th class="p-2 border">Product Name</th>
+            <th class="p-2 border">Unit</th>
+            <th class="p-2 border">MRP</th>
+            <th class="p-2 border">GST %</th>
+            <th class="p-2 border">Actions</th>
+          </tr></thead>
+          <tbody id="tbl-products"></tbody>
+        </table>
+      </section>
+
+      <!-- Supplier Master -->
+      <section id="suppliers" class="section hidden">
+        <h2 class="text-2xl font-semibold text-blue-800 mb-4">Supplier Master</h2>
+        <form id="form-suppliers" class="space-y-4 max-w-3xl" novalidate>
+          <input type="hidden" id="supp-id" />
+          <label for="supp-name" class="required block">Supplier Name</label>
+          <input type="text" id="supp-name" placeholder="Supplier Name" required class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-supp-name" class="error-msg"></div>
+
+          <label for="supp-contact" class="required block">Contact Number</label>
+          <input type="tel" id="supp-contact" placeholder="Contact Number" required class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-supp-contact" class="error-msg"></div>
+
+          <label for="supp-email" class="block">Email (optional)</label>
+          <input type="email" id="supp-email" placeholder="Email" class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-supp-email" class="error-msg"></div>
+
+          <label for="supp-address" class="required block">Address</label>
+          <input type="text" id="supp-address" placeholder="Address" required class="w-full p-2 border rounded" autocomplete="off" />
+          <div id="error-supp-address" class="error-msg"></div>
+
+          <label for="supp-gst" class="block">GST Number (optional)</label>
+          <input type="text" id="supp-gst" placeholder="GST Number" class="w-full p-2 border rounded" autocomplete="off" />
+
+          <label for="supp-desc" class="block">Description (optional)</label>
+          <input type="text" id="supp-desc" placeholder="Description" class="w-full p-2 border rounded" autocomplete="off" />
+
+          <div class="flex space-x-2">
+            <button type="submit" id="btn-supp-save" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Supplier</button>
+            <button type="button" id="btn-supp-cancel" class="bg-gray-400 text-white px-4 py-2 rounded hidden">Cancel</button>
+          </div>
+        </form>
+
+        <table class="min-w-full bg-white mt-6 border text-sm">
+          <thead class="bg-gray-200"><tr>
+            <th class="p-2 border">#</th>
+            <th class="p-2 border">Supplier Name</th>
+            <th class="p-2 border">Contact</th>
+            <th class="p-2 border">Email</th>
+            <th class="p-2 border">Address</th>
+            <th class="p-2 border">Actions</th>
+          </tr></thead>
+          <tbody id="tbl-suppliers"></tbody>
+        </table>
+      </section>
     </main>
   </div>
 
 <script>
+  // Utility functions
   function generateUniqueId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2);
   }
 
+  // UI Switching
   function showSection(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
     document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active-btn'));
     document.getElementById(id).classList.remove('hidden');
     document.getElementById(id + '-btn').classList.add('active-btn');
+
+    // Autofocus first input on section show
     if (id === 'customers') {
       setTimeout(() => document.getElementById('cust-name').focus(), 100);
       clearCustomerForm();
@@ -214,16 +335,23 @@
       populateInvoiceCustomers();
       setTimeout(() => document.getElementById('invoice-customer').focus(), 100);
     } else if (id === 'dashboard') {
-      // No inputs to focus
+      updateDashboardCounters();
+    } else if (id === 'products') {
+      clearProductForm();
+      renderProducts();
+      setTimeout(() => document.getElementById('prod-name').focus(), 100);
+    } else if (id === 'suppliers') {
+      clearSupplierForm();
+      renderSuppliers();
+      setTimeout(() => document.getElementById('supp-name').focus(), 100);
     }
   }
 
   window.onload = () => {
-    ['dashboard', 'purchase', 'invoice', 'customers'].forEach(id => {
+    ['dashboard', 'purchase', 'invoice', 'customers', 'products', 'suppliers'].forEach(id => {
       document.getElementById(id + '-btn').onclick = () => showSection(id);
     });
     showSection('dashboard');
-    updateDashboardCounters();
     setDefaultDates();
   };
 
@@ -233,72 +361,93 @@
     document.getElementById('invoice-date').value = today;
   }
 
-  // Customers CRUD and render
+  // ------------------- Customers -------------------
   function getCustomers() {
     return JSON.parse(localStorage.getItem('customers') || '[]');
   }
   function setCustomers(arr) {
     localStorage.setItem('customers', JSON.stringify(arr));
   }
-  function updateDashboardCounters() {
-    document.getElementById('cnt-customers').textContent = getCustomers().length;
-    document.getElementById('cnt-purchase').textContent = getPurchases().length;
-    document.getElementById('cnt-invoice').textContent = getInvoices().length;
-  }
   function renderCustomers() {
     const tbody = document.getElementById('tbl-customers');
     tbody.innerHTML = '';
     getCustomers().forEach((c, i) => {
       const tr = document.createElement('tr');
-      const serialTd = document.createElement('td');
-      serialTd.className = 'p-2 border text-center';
-      serialTd.textContent = i + 1;
-      tr.appendChild(serialTd);
-      ['name', 'mobile', 'address', 'gst'].forEach(k => {
-        const td = document.createElement('td');
-        td.className = 'p-2 border';
-        td.textContent = c[k] || '';
-        tr.appendChild(td);
-      });
-      const tdActions = document.createElement('td');
-      tdActions.className = 'p-2 border flex space-x-2';
-      const btnE = document.createElement('button');
-      btnE.textContent = 'Edit';
-      btnE.className = 'btn-edit text-white px-2 py-1 rounded';
-      btnE.onclick = () => editCustomer(c.id);
-      const btnD = document.createElement('button');
-      btnD.textContent = 'Delete';
-      btnD.className = 'btn-delete text-white px-2 py-1 rounded';
-      btnD.onclick = () => deleteCustomer(c.id);
-      tdActions.append(btnE, btnD);
-      tr.appendChild(tdActions);
+      tr.innerHTML = `
+        <td class="p-2 border text-center">${i + 1}</td>
+        <td class="p-2 border">${c.name || ''}</td>
+        <td class="p-2 border">${c.mobile || ''}</td>
+        <td class="p-2 border">${c.email || ''}</td>
+        <td class="p-2 border">${c.address || ''}</td>
+        <td class="p-2 border">${c.gst || ''}</td>
+        <td class="p-2 border flex space-x-2">
+          <button class="btn-edit text-white px-2 py-1 rounded" onclick="editCustomer('${c.id}')">Edit</button>
+          <button class="btn-delete text-white px-2 py-1 rounded" onclick="deleteCustomer('${c.id}')">Delete</button>
+        </td>`;
       tbody.appendChild(tr);
     });
+    updateDashboardCounters();
   }
   const formCustomer = document.getElementById('form-customers');
   const btnCancelCustomer = document.getElementById('btn-cancel');
 
   formCustomer.onsubmit = e => {
     e.preventDefault();
+    clearErrorsCustomer();
     const id = document.getElementById('cust-id').value;
-    const customer = {
-      id: id || generateUniqueId(),
-      name: document.getElementById('cust-name').value.trim(),
-      mobile: document.getElementById('cust-mobile').value.trim(),
-      address: document.getElementById('cust-address').value.trim(),
-      gst: document.getElementById('cust-gst').value.trim(),
-      credit: document.getElementById('cust-credit').value,
-      desc: document.getElementById('cust-desc').value.trim()
-    };
-    let arr = getCustomers();
-    const nameExists = arr.some(c => c.name.toLowerCase() === customer.name.toLowerCase() && c.id !== customer.id);
-    if (nameExists) {
-      if (!confirm(`Warning: The customer name "${customer.name}" already exists. Do you want to proceed?`)) {
-        return;
+    const name = document.getElementById('cust-name').value.trim();
+    const mobile = document.getElementById('cust-mobile').value.trim();
+    const email = document.getElementById('cust-email').value.trim();
+    const address = document.getElementById('cust-address').value.trim();
+    const gst = document.getElementById('cust-gst').value.trim();
+    const credit = document.getElementById('cust-credit').value;
+    const desc = document.getElementById('cust-desc').value.trim();
+
+    let valid = true;
+
+    if (!name) {
+      showError('error-name', 'Customer Name is required.');
+      valid = false;
+    }
+    if (!mobile) {
+      showError('error-mobile', 'Mobile Number is required.');
+      valid = false;
+    } else if (!/^\d{10}$/.test(mobile)) {
+      showError('error-mobile', 'Mobile Number must be 10 digits.');
+      valid = false;
+    }
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+      showError('error-email', 'Invalid email format.');
+      valid = false;
+    }
+    if (!address) {
+      showError('error-address', 'Address is required.');
+      valid = false;
+    }
+
+    // Duplicate mobile/email check
+    const customers = getCustomers();
+    const duplicateMobile = customers.find(c => c.mobile === mobile && c.id !== id);
+    if (duplicateMobile) {
+      if (!confirm(`Warning: Mobile number ${mobile} already exists for another customer. Proceed?`)) {
+        valid = false;
       }
     }
+    if (email) {
+      const duplicateEmail = customers.find(c => c.email.toLowerCase() === email.toLowerCase() && c.id !== id);
+      if (duplicateEmail) {
+        if (!confirm(`Warning: Email ${email} already exists for another customer. Proceed?`)) {
+          valid = false;
+        }
+      }
+    }
+
+    if (!valid) return;
+
+    const customer = { id: id || generateUniqueId(), name, mobile, email, address, gst, credit, desc };
+    let arr = customers;
     if (id) {
-      arr = arr.map(c => c.id === customer.id ? customer : c);
+      arr = arr.map(c => c.id === id ? customer : c);
     } else {
       arr.push(customer);
     }
@@ -306,14 +455,15 @@
     clearCustomerForm();
     renderCustomers();
     updateDashboardCounters();
-    formCustomer.querySelector('#btn-save').textContent = 'Add Customer';
     btnCancelCustomer.classList.add('hidden');
+    formCustomer.querySelector('#btn-save').textContent = 'Add Customer';
   };
 
   btnCancelCustomer.onclick = () => {
     clearCustomerForm();
     btnCancelCustomer.classList.add('hidden');
     formCustomer.querySelector('#btn-save').textContent = 'Add Customer';
+    clearErrorsCustomer();
   };
 
   function editCustomer(id) {
@@ -322,16 +472,19 @@
     document.getElementById('cust-id').value = c.id;
     document.getElementById('cust-name').value = c.name;
     document.getElementById('cust-mobile').value = c.mobile;
+    document.getElementById('cust-email').value = c.email || '';
     document.getElementById('cust-address').value = c.address;
-    document.getElementById('cust-gst').value = c.gst;
-    document.getElementById('cust-credit').value = c.credit;
-    document.getElementById('cust-desc').value = c.desc;
+    document.getElementById('cust-gst').value = c.gst || '';
+    document.getElementById('cust-credit').value = c.credit || '';
+    document.getElementById('cust-desc').value = c.desc || '';
     formCustomer.querySelector('#btn-save').textContent = 'Update Customer';
     btnCancelCustomer.classList.remove('hidden');
+    clearErrorsCustomer();
     document.getElementById('cust-name').focus();
   }
 
   function deleteCustomer(id) {
+    if (!confirm('Are you sure you want to delete this customer?')) return;
     const arr = getCustomers().filter(c => c.id !== id);
     setCustomers(arr);
     renderCustomers();
@@ -341,9 +494,288 @@
   function clearCustomerForm() {
     document.getElementById('cust-id').value = '';
     formCustomer.reset();
+    clearErrorsCustomer();
   }
 
-  // Purchases
+  function showError(id, msg) {
+    document.getElementById(id).textContent = msg;
+  }
+  function clearErrorsCustomer() {
+    ['error-name', 'error-mobile', 'error-email', 'error-address'].forEach(id => {
+      document.getElementById(id).textContent = '';
+    });
+  }
+
+  // ------------------- Products -------------------
+  function getProducts() {
+    return JSON.parse(localStorage.getItem('products') || '[]');
+  }
+  function setProducts(arr) {
+    localStorage.setItem('products', JSON.stringify(arr));
+  }
+  function renderProducts() {
+    const tbody = document.getElementById('tbl-products');
+    tbody.innerHTML = '';
+    getProducts().forEach((p, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="p-2 border text-center">${i + 1}</td>
+        <td class="p-2 border">${p.name || ''}</td>
+        <td class="p-2 border">${p.unit || ''}</td>
+        <td class="p-2 border">${p.mrp || ''}</td>
+        <td class="p-2 border">${p.gst || ''}</td>
+        <td class="p-2 border flex space-x-2">
+          <button class="btn-edit text-white px-2 py-1 rounded" onclick="editProduct('${p.id}')">Edit</button>
+          <button class="btn-delete text-white px-2 py-1 rounded" onclick="deleteProduct('${p.id}')">Delete</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    updateDashboardCounters();
+    populateProductLists();
+  }
+  const formProduct = document.getElementById('form-products');
+  const btnCancelProduct = document.getElementById('btn-prod-cancel');
+
+  formProduct.onsubmit = e => {
+    e.preventDefault();
+    clearErrorsProduct();
+    const id = document.getElementById('prod-id').value;
+    const name = document.getElementById('prod-name').value.trim();
+    const unit = document.getElementById('prod-unit').value;
+    const mrp = document.getElementById('prod-mrp').value;
+    const gst = document.getElementById('prod-gst').value;
+
+    let valid = true;
+    if (!name) {
+      showError('error-prod-name', 'Product Name is required.');
+      valid = false;
+    }
+    if (!unit) {
+      showError('error-prod-unit', 'Unit is required.');
+      valid = false;
+    }
+    if (!mrp || mrp < 0) {
+      showError('error-prod-mrp', 'Valid MRP is required.');
+      valid = false;
+    }
+    if (gst === '' || gst < 0 || gst > 100) {
+      showError('error-prod-gst', 'GST % must be between 0 and 100.');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const products = getProducts();
+    // Duplicate check on product name
+    const duplicateName = products.find(p => p.name.toLowerCase() === name.toLowerCase() && p.id !== id);
+    if (duplicateName) {
+      if (!confirm(`Warning: Product name "${name}" already exists. Proceed?`)) return;
+    }
+
+    const product = { id: id || generateUniqueId(), name, unit, mrp, gst };
+    let arr = products;
+    if (id) {
+      arr = arr.map(p => p.id === id ? product : p);
+    } else {
+      arr.push(product);
+    }
+    setProducts(arr);
+    clearProductForm();
+    renderProducts();
+    updateDashboardCounters();
+  };
+
+  btnCancelProduct.onclick = () => {
+    clearProductForm();
+    btnCancelProduct.classList.add('hidden');
+    clearErrorsProduct();
+  };
+
+  function editProduct(id) {
+    const p = getProducts().find(p => p.id === id);
+    if (!p) return;
+    document.getElementById('prod-id').value = p.id;
+    document.getElementById('prod-name').value = p.name;
+    document.getElementById('prod-unit').value = p.unit;
+    document.getElementById('prod-mrp').value = p.mrp;
+    document.getElementById('prod-gst').value = p.gst;
+    formProduct.querySelector('#btn-prod-save').textContent = 'Update Product';
+    btnCancelProduct.classList.remove('hidden');
+    clearErrorsProduct();
+    document.getElementById('prod-name').focus();
+  }
+
+  function deleteProduct(id) {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    const arr = getProducts().filter(p => p.id !== id);
+    setProducts(arr);
+    renderProducts();
+    updateDashboardCounters();
+  }
+
+  function clearProductForm() {
+    document.getElementById('prod-id').value = '';
+    formProduct.reset();
+    clearErrorsProduct();
+  }
+
+  function showError(id, msg) {
+    document.getElementById(id).textContent = msg;
+  }
+  function clearErrorsProduct() {
+    ['error-prod-name', 'error-prod-unit', 'error-prod-mrp', 'error-prod-gst'].forEach(id => {
+      document.getElementById(id).textContent = '';
+    });
+  }
+
+  // Populate product datalist for Purchase and Invoice
+  function populateProductLists() {
+    const products = getProducts();
+    const purchaseList = document.getElementById('product-list-purchase');
+    const invoiceList = document.getElementById('product-list-invoice');
+    purchaseList.innerHTML = '';
+    invoiceList.innerHTML = '';
+    products.forEach(p => {
+      const option1 = document.createElement('option');
+      option1.value = p.name;
+      purchaseList.appendChild(option1);
+      const option2 = document.createElement('option');
+      option2.value = p.name;
+      invoiceList.appendChild(option2);
+    });
+  }
+
+  // ------------------- Suppliers -------------------
+  function getSuppliers() {
+    return JSON.parse(localStorage.getItem('suppliers') || '[]');
+  }
+  function setSuppliers(arr) {
+    localStorage.setItem('suppliers', JSON.stringify(arr));
+  }
+  function renderSuppliers() {
+    const tbody = document.getElementById('tbl-suppliers');
+    tbody.innerHTML = '';
+    getSuppliers().forEach((s, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="p-2 border text-center">${i + 1}</td>
+        <td class="p-2 border">${s.name || ''}</td>
+        <td class="p-2 border">${s.contact || ''}</td>
+        <td class="p-2 border">${s.email || ''}</td>
+        <td class="p-2 border">${s.address || ''}</td>
+        <td class="p-2 border flex space-x-2">
+          <button class="btn-edit text-white px-2 py-1 rounded" onclick="editSupplier('${s.id}')">Edit</button>
+          <button class="btn-delete text-white px-2 py-1 rounded" onclick="deleteSupplier('${s.id}')">Delete</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  const formSupplier = document.getElementById('form-suppliers');
+  const btnCancelSupplier = document.getElementById('btn-supp-cancel');
+
+  formSupplier.onsubmit = e => {
+    e.preventDefault();
+    clearErrorsSupplier();
+    const id = document.getElementById('supp-id').value;
+    const name = document.getElementById('supp-name').value.trim();
+    const contact = document.getElementById('supp-contact').value.trim();
+    const email = document.getElementById('supp-email').value.trim();
+    const address = document.getElementById('supp-address').value.trim();
+    const gst = document.getElementById('supp-gst').value.trim();
+    const desc = document.getElementById('supp-desc').value.trim();
+
+    let valid = true;
+    if (!name) {
+      showError('error-supp-name', 'Supplier Name is required.');
+      valid = false;
+    }
+    if (!contact) {
+      showError('error-supp-contact', 'Contact Number is required.');
+      valid = false;
+    } else if (!/^\d{10}$/.test(contact)) {
+      showError('error-supp-contact', 'Contact Number must be 10 digits.');
+      valid = false;
+    }
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+      showError('error-supp-email', 'Invalid email format.');
+      valid = false;
+    }
+    if (!address) {
+      showError('error-supp-address', 'Address is required.');
+      valid = false;
+    }
+    // Duplicate contact/email check
+    const suppliers = getSuppliers();
+    const duplicateContact = suppliers.find(s => s.contact === contact && s.id !== id);
+    if (duplicateContact) {
+      if (!confirm(`Warning: Contact number ${contact} already exists for another supplier. Proceed?`)) return;
+    }
+    if (email) {
+      const duplicateEmail = suppliers.find(s => s.email.toLowerCase() === email.toLowerCase() && s.id !== id);
+      if (duplicateEmail) {
+        if (!confirm(`Warning: Email ${email} already exists for another supplier. Proceed?`)) return;
+      }
+    }
+
+    if (!valid) return;
+
+    const supplier = { id: id || generateUniqueId(), name, contact, email, address, gst, desc };
+    let arr = suppliers;
+    if (id) {
+      arr = arr.map(s => s.id === id ? supplier : s);
+    } else {
+      arr.push(supplier);
+    }
+    setSuppliers(arr);
+    clearSupplierForm();
+    renderSuppliers();
+  };
+
+  btnCancelSupplier.onclick = () => {
+    clearSupplierForm();
+    btnCancelSupplier.classList.add('hidden');
+    clearErrorsSupplier();
+  };
+
+  function editSupplier(id) {
+    const s = getSuppliers().find(s => s.id === id);
+    if (!s) return;
+    document.getElementById('supp-id').value = s.id;
+    document.getElementById('supp-name').value = s.name;
+    document.getElementById('supp-contact').value = s.contact;
+    document.getElementById('supp-email').value = s.email || '';
+    document.getElementById('supp-address').value = s.address;
+    document.getElementById('supp-gst').value = s.gst || '';
+    document.getElementById('supp-desc').value = s.desc || '';
+    formSupplier.querySelector('#btn-supp-save').textContent = 'Update Supplier';
+    btnCancelSupplier.classList.remove('hidden');
+    clearErrorsSupplier();
+    document.getElementById('supp-name').focus();
+  }
+
+  function deleteSupplier(id) {
+    if (!confirm('Are you sure you want to delete this supplier?')) return;
+    const arr = getSuppliers().filter(s => s.id !== id);
+    setSuppliers(arr);
+    renderSuppliers();
+  }
+
+  function clearSupplierForm() {
+    document.getElementById('supp-id').value = '';
+    formSupplier.reset();
+    clearErrorsSupplier();
+  }
+
+  function showError(id, msg) {
+    document.getElementById(id).textContent = msg;
+  }
+  function clearErrorsSupplier() {
+    ['error-supp-name', 'error-supp-contact', 'error-supp-email', 'error-supp-address'].forEach(id => {
+      document.getElementById(id).textContent = '';
+    });
+  }
+
+  // ------------------- Purchases -------------------
   function getPurchases() {
     return JSON.parse(localStorage.getItem('purchases') || '[]');
   }
@@ -355,30 +787,21 @@
     tbody.innerHTML = '';
     getPurchases().forEach((p, i) => {
       const tr = document.createElement('tr');
-      const serialTd = document.createElement('td');
-      serialTd.className = 'p-2 border text-center';
-      serialTd.textContent = i + 1;
-      tr.appendChild(serialTd);
-      ['vendor', 'product', 'qty', 'rate', 'date', 'remarks'].forEach(k => {
-        const td = document.createElement('td');
-        td.className = 'p-2 border';
-        td.textContent = p[k] || '';
-        tr.appendChild(td);
-      });
-      const tdActions = document.createElement('td');
-      tdActions.className = 'p-2 border flex space-x-2';
-      const btnE = document.createElement('button');
-      btnE.textContent = 'Edit';
-      btnE.className = 'btn-edit text-white px-2 py-1 rounded';
-      btnE.onclick = () => editPurchase(p.id);
-      const btnD = document.createElement('button');
-      btnD.textContent = 'Delete';
-      btnD.className = 'btn-delete text-white px-2 py-1 rounded';
-      btnD.onclick = () => deletePurchase(p.id);
-      tdActions.append(btnE, btnD);
-      tr.appendChild(tdActions);
+      tr.innerHTML = `
+        <td class="p-2 border text-center">${i + 1}</td>
+        <td class="p-2 border">${p.vendor || ''}</td>
+        <td class="p-2 border">${p.product || ''}</td>
+        <td class="p-2 border">${p.qty || ''}</td>
+        <td class="p-2 border">${p.rate || ''}</td>
+        <td class="p-2 border">${p.date || ''}</td>
+        <td class="p-2 border">${p.remarks || ''}</td>
+        <td class="p-2 border flex space-x-2">
+          <button class="btn-edit text-white px-2 py-1 rounded" onclick="editPurchase('${p.id}')">Edit</button>
+          <button class="btn-delete text-white px-2 py-1 rounded" onclick="deletePurchase('${p.id}')">Delete</button>
+        </td>`;
       tbody.appendChild(tr);
     });
+    updateDashboardCounters();
   }
   const formPurchase = document.getElementById('form-purchase');
 
@@ -421,6 +844,7 @@
   }
 
   function deletePurchase(id) {
+    if (!confirm('Are you sure you want to delete this purchase record?')) return;
     const arr = getPurchases().filter(p => p.id !== id);
     setPurchases(arr);
     renderPurchases();
@@ -434,7 +858,7 @@
     formPurchase.removeAttribute('data-edit-id');
   }
 
-  // Invoices
+  // ------------------- Invoices -------------------
   function getInvoices() {
     return JSON.parse(localStorage.getItem('invoices') || '[]');
   }
@@ -446,30 +870,22 @@
     tbody.innerHTML = '';
     getInvoices().forEach((inv, i) => {
       const tr = document.createElement('tr');
-      const serialTd = document.createElement('td');
-      serialTd.className = 'p-2 border text-center';
-      serialTd.textContent = i + 1;
-      tr.appendChild(serialTd);
-      ['customer', 'date', 'product', 'qty', 'rate', 'gst', 'discount'].forEach(k => {
-        const td = document.createElement('td');
-        td.className = 'p-2 border';
-        td.textContent = inv[k] || '';
-        tr.appendChild(td);
-      });
-      const tdActions = document.createElement('td');
-      tdActions.className = 'p-2 border flex space-x-2';
-      const btnE = document.createElement('button');
-      btnE.textContent = 'Edit';
-      btnE.className = 'btn-edit text-white px-2 py-1 rounded';
-      btnE.onclick = () => editInvoice(inv.id);
-      const btnD = document.createElement('button');
-      btnD.textContent = 'Delete';
-      btnD.className = 'btn-delete text-white px-2 py-1 rounded';
-      btnD.onclick = () => deleteInvoice(inv.id);
-      tdActions.append(btnE, btnD);
-      tr.appendChild(tdActions);
+      tr.innerHTML = `
+        <td class="p-2 border text-center">${i + 1}</td>
+        <td class="p-2 border">${inv.customer || ''}</td>
+        <td class="p-2 border">${inv.date || ''}</td>
+        <td class="p-2 border">${inv.product || ''}</td>
+        <td class="p-2 border">${inv.qty || ''}</td>
+        <td class="p-2 border">${inv.rate || ''}</td>
+        <td class="p-2 border">${inv.gst || ''}</td>
+        <td class="p-2 border">${inv.discount || ''}</td>
+        <td class="p-2 border flex space-x-2">
+          <button class="btn-edit text-white px-2 py-1 rounded" onclick="editInvoice('${inv.id}')">Edit</button>
+          <button class="btn-delete text-white px-2 py-1 rounded" onclick="deleteInvoice('${inv.id}')">Delete</button>
+        </td>`;
       tbody.appendChild(tr);
     });
+    updateDashboardCounters();
   }
   const formInvoice = document.getElementById('form-invoice');
 
@@ -514,6 +930,7 @@
   }
 
   function deleteInvoice(id) {
+    if (!confirm('Are you sure you want to delete this invoice record?')) return;
     const arr = getInvoices().filter(inv => inv.id !== id);
     setInvoices(arr);
     renderInvoices();
@@ -527,6 +944,7 @@
     formInvoice.removeAttribute('data-edit-id');
   }
 
+  // Populate invoice customer dropdown
   function populateInvoiceCustomers() {
     const select = document.getElementById('invoice-customer');
     const customers = getCustomers();
@@ -539,14 +957,22 @@
     });
   }
 
-  // Auto-focus next input after date change (purchase and invoice)
+  // Update dashboard counters
+  function updateDashboardCounters() {
+    document.getElementById('cnt-customers').textContent = getCustomers().length;
+    document.getElementById('cnt-purchase').textContent = getPurchases().length;
+    document.getElementById('cnt-invoice').textContent = getInvoices().length;
+    document.getElementById('cnt-products').textContent = getProducts().length;
+  }
+
+  // Auto-focus next input on date change for better UX
   document.getElementById('purchase-date').addEventListener('change', () => {
     document.getElementById('purchase-remarks').focus();
   });
   document.getElementById('invoice-date').addEventListener('change', () => {
     document.getElementById('invoice-product').focus();
   });
+
 </script>
 </body>
 </html>
-
